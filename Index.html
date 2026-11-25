@@ -1,0 +1,77 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Flame, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Panel } from "@/components/app/bits";
+import { LEVELS, MOTIVASI } from "@/data/materi";
+import { meta } from "@/lib/meta";
+import { minutesToday, streakOf, useProgress } from "@/lib/progress";
+import logoAsset from "@/assets/logo-smkn2pinrang.png.asset.json";
+
+export const Route = createFileRoute("/")({
+  head: () => meta("Beranda", "Guru mengaji digital yang sabar: mulai belajar membaca Al-Qur'an dari kemampuan Anda."),
+  component: Home,
+});
+
+function Home() {
+  const p = useProgress();
+  const [mot, setMot] = useState(MOTIVASI[0]);
+  useEffect(() => setMot(MOTIVASI[Math.floor(Math.random() * MOTIVASI.length)]), []);
+  const min = minutesToday(p);
+  const pct = Math.min(100, Math.round((min / p.target) * 100));
+  const streak = streakOf(p);
+  const lvl = LEVELS.find((l) => l.n === (p.startLevel ?? 1))!;
+  return (
+    <div className="space-y-6">
+      <section className="bg-hero pattern-bg relative overflow-hidden rounded-3xl p-7 text-primary-foreground shadow-soft sm:p-10">
+        <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-10">
+          <div className="order-1 flex shrink-0 items-center gap-4 sm:order-2 sm:flex-col sm:items-center sm:gap-3">
+            <div className="relative">
+              <span aria-hidden className="absolute -inset-3 rounded-full bg-accent/25 blur-2xl sm:-inset-5" />
+              <div className="relative rounded-full bg-primary-foreground p-2 shadow-soft ring-4 ring-accent/60 sm:p-3">
+                <img
+                  src={logoAsset.url}
+                  alt="Logo SMK Negeri 2 Pinrang"
+                  className="size-16 sm:size-24"
+                />
+              </div>
+            </div>
+            <p className="text-base font-bold leading-tight sm:text-center sm:text-lg">
+              SMK Negeri 2
+              <span className="block text-accent">Pinrang</span>
+            </p>
+          </div>
+          <div className="order-2 min-w-0 max-w-2xl flex-1 sm:order-1">
+            <p className="arabic text-3xl text-accent">السَّلَامُ عَلَيْكُمْ</p>
+            <h1 className="mt-2 text-3xl font-extrabold sm:text-5xl">Assalamu'alaikum 👋</h1>
+            <p className="mt-3 text-xl">Selamat datang di Ngaji Qur'an.</p>
+            <p className="mt-1 max-w-xl text-lg opacity-90">Mulai dari kemampuan Anda. Tidak perlu malu untuk belajar dari nol.</p>
+            <Button asChild size="lg" variant="secondary" className="mt-6 h-16 rounded-2xl px-10 text-xl font-bold">
+              {p.startLevel ? <Link to={lvl.to}>LANJUT BELAJAR</Link> : <Link to="/tes-awal">MULAI BELAJAR</Link>}
+            </Button>
+          </div>
+        </div>
+      </section>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Panel>
+          <div className="flex items-center gap-2 text-muted-foreground"><Target className="size-5" />Progress Anda hari ini</div>
+          <p className="mt-2 text-4xl font-bold">{pct}%</p>
+          <Progress value={pct} className="mt-3 h-3" />
+          <p className="mt-2 text-muted-foreground">Target hari ini: {p.target} menit · sudah {min} menit</p>
+        </Panel>
+        <Panel>
+          <div className="flex items-center gap-2 text-muted-foreground"><Flame className="size-5 text-gold" />Istiqamah</div>
+          <p className="mt-2 text-4xl font-bold">{streak} hari</p>
+          <p className="mt-2 text-muted-foreground">{streak > 0 ? `Anda telah belajar mengaji selama ${streak} hari berturut-turut.` : "Mulai hari ini, insyaAllah istiqamah."}</p>
+        </Panel>
+      </div>
+      <Panel className="border-accent bg-accent/15"><p className="text-lg italic">“{mot}”</p></Panel>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Button asChild size="lg" variant="outline" className="h-14 text-base"><Link to="/latihan">Latihan Hari Ini</Link></Button>
+        <Button asChild size="lg" variant="outline" className="h-14 text-base"><Link to="/huruf">Huruf Hijaiyah</Link></Button>
+        <Button asChild size="lg" variant="outline" className="h-14 text-base"><Link to="/mushaf">Mushaf Latihan</Link></Button>
+      </div>
+    </div>
+  );
+}
